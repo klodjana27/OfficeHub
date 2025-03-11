@@ -1,0 +1,176 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">📅 Rezervimet e Sallave</h2>
+
+    <!-- ✅ Button to open the modal for booking a room -->
+    <div class="text-end mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#requestMeetingModal">
+            ➕ Rezervo Sallën
+        </button>
+    </div>
+
+    <!-- ✅ Table displaying room bookings -->
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Salla</th>
+                <th>Punonjësi</th>
+                <th>Data</th>
+                <th>Orari</th>
+                <th>Përshkrimi</th>  <!-- ✅ Added Description -->
+                <th>Statusi</th>
+                {% if user.is_superuser or is_coordinator %}
+                    <th>Veprime</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for booking in bookings %}
+            <tr>
+                <td>{{ booking.room }}</td>
+                <td>{{ booking.employee.username }}</td>
+                <td>{{ booking.date }}</td>
+                <td>{{ booking.start_time }} - {{ booking.end_time }}</td>
+                <td>{{ booking.description|default:"-" }}</td>  <!-- ✅ Display Description -->
+                <td>
+                    {% if booking.status == "Approved" %}
+                        <span class="badge bg-success">Aprovuar</span>
+                    {% elif booking.status == "Rejected" %}
+                        <span class="badge bg-danger">Refuzuar</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">Në Pritje</span>
+                    {% endif %}
+                </td>
+                {% if user.is_superuser or is_coordinator %}
+                <td>
+                    <button class="btn btn-success btn-sm" onclick="approveBooking({{ booking.id }})">✔ Aprovuar</button>
+                    <button class="btn btn-danger btn-sm" onclick="rejectBooking({{ booking.id }})">❌ Refuzuar</button>
+                </td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center">⛔ Nuk ka rezervime të regjistruara.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- ✅ Modal for Meeting Room Booking -->
+<div class="modal fade" id="requestMeetingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">📅 Rezervo Sallën</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="meetingRequestForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="room">Salla</label>
+                        <select name="room" id="room" class="form-control">
+                            <option value="Room A">Salla A</option>
+                            <option value="Room B">Salla B</option>
+                            <option value="Room C">Salla C</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="date">Data</label>
+                        <input type="date" name="date" id="date" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="start_time">Ora e Fillimit</label>
+                        <input type="time" name="start_time" id="start_time" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="end_time">Ora e Mbarimit</label>
+                        <input type="time" name="end_time" id="end_time" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description">Përshkrimi</label>
+                        <textarea name="description" id="description" class="form-control"></textarea>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100">📩 Dërgo Kërkesën</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ✅ AJAX to submit the meeting request
+document.getElementById("meetingRequestForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    fetch("{% url 'request_meeting' %}", {
+        method: "POST",
+        body: new FormData(this),
+        headers: { "X-CSRFToken": getCSRFToken() }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("✅ Kërkesa për sallën u dërgua me sukses!");
+            location.reload();  // Refresh page to show the new booking
+        } else {
+            alert("⚠ Ndodhi një gabim: " + (data.error || "Provo përsëri!"));
+        }
+    })
+    .catch(error => alert("⚠ Ndodhi një gabim: " + error.message));
+});
+
+function approveBooking(id) {
+    fetch(`/meetings/approve/${id}/`, { 
+        method: "POST",
+        headers: { "X-CSRFToken": getCSRFToken() } 
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert("✅ " + data.message);
+            location.reload();
+        } else if (data.error) {
+            alert("⚠ " + data.error);
+        } else {
+            alert("⚠ Ndodhi një gabim i panjohur.");
+        }
+    })
+    .catch(error => alert("⚠ Ndodhi një gabim: " + error.message));
+}
+
+function rejectBooking(id) {
+    fetch(`/meetings/reject/${id}/`, { 
+        method: "POST",
+        headers: { "X-CSRFToken": getCSRFToken() } 
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.message) {
+            alert("✅ " + data.message);
+            location.reload();
+        } else if (data.error) {
+            alert("⚠ " + data.error);
+        } else {
+            alert("⚠ Ndodhi një gabim i panjohur.");
+        }
+    })
+    .catch(error => alert("⚠ Ndodhi një gabim: " + error.message));
+}
+
+// ✅ Function to Get CSRF Token
+function getCSRFToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]').value;
+}
+</script>
+
+{% endblock %}

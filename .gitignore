@@ -22,7 +22,6 @@ db.sqlite3-journal
 *.pyo
 migrations/
 media/
-meetings/
 staticfiles/
 node_modules/
 
