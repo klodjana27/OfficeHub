@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="sq">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <title>OfficeHub</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; background-color: #e5e5e5; color: #222; }
+        header { background: linear-gradient(90deg, #3b3b3b, #252525); color: white; padding: 20px; text-align: left; font-size: 24px; font-weight: bold; padding-left: 50px; }
+        .menu-toggle { background: none; border: none; font-size: 24px; color: white; cursor: pointer; position: absolute; top: 15px; left: 15px; }
+        .sidebar { background: #252525; color: white; height: 100vh; padding: 20px; position: fixed; left: -250px; width: 250px; transition: left 0.3s ease-in-out; }
+        .sidebar.show { left: 0; }
+        .sidebar a { color: #ddd; display: block; padding: 10px; text-decoration: none; border-radius: 5px; font-weight: bold; }
+        .sidebar a:hover { background: #555; color: white; }
+        main { padding: 40px; margin-left: 50px; transition: margin-left 0.3s ease-in-out; display: flex; justify-content: center; }
+        .content-box { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); width: 80%; }
+        footer { background: #252525; color: white; text-align: center; padding: 10px; position: fixed; bottom: 0; width: 100%; }
+
+        /* ✅ Stilizimi i nën-menusë */
+        .submenu {
+            list-style: none;
+            padding-left: 15px;
+            display: none; /* Fsheh nën-menunë fillimisht */
+            transition: max-height 0.3s ease-out;
+            max-height: 0;
+            overflow: hidden;
+        }
+
+        .submenu li {
+            padding: 5px 0;
+        }
+
+        .submenu a {
+            color: #ddd;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .submenu a:hover {
+            color: white;
+        }
+
+        .submenu.show {
+            display: block;
+            max-height: 300px; /* Jep një max-height për animacion */
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <button class="menu-toggle" onclick="toggleMenu()">☰</button>
+    <span style="font-size: 20px; font-weight: lighter; margin-left: 40px;">OfficeHub</span>
+</header>
+
+<div class="sidebar" id="sidebarMenu">
+    <h5 class="text-white text-center">📌 Menu</h5>
+    <a href="{% url 'profile' %}">👤 Profili</a>
+    <a href="{% url 'notifications' %}">🔔 Njoftime</a>
+
+    <!-- ✅ Leje me nën-menu -->
+    <a href="#" class="dropdown-toggle" onclick="toggleSubmenu(event)">📜 Leje ▼</a>
+    <ul id="submenu-leje" class="submenu">
+        <li><a href="{% url 'leave_requests' %}">📜 Kërkesat për Leje</a></li>
+        <li><a href="{% url 'leave_summary' %}">📊 Përmbledhja e Lejeve</a></li>
+    </ul>
+
+    <a href="{% url 'training_list' %}">📚 Trajnime</a>
+    <a href="{% url 'meeting_list' %}">📅 Salla Takimi</a>
+
+    {% if user.is_authenticated %}
+        <a href="{% url 'logout' %}" class="text-danger">🚪 Dil</a>
+    {% else %}
+        <a href="{% url 'login' %}">🔑 Hyr</a>
+    {% endif %}
+</div>
+
+<main id="mainContent">
+    <div class="content-box">
+        {% block content %}
+        {% endblock %}
+    </div>
+</main>
+
+<footer>
+    <p>OfficeHub K.F 2025</p>
+</footer>
+
+<!-- ✅ JavaScript për hapjen/mbylljen e sidebar dhe nën-menusë -->
+<script>
+    function toggleMenu() {
+        var sidebar = document.getElementById("sidebarMenu");
+        var main = document.getElementById("mainContent");
+
+        if (sidebar.classList.contains("show")) {
+            sidebar.classList.remove("show");
+            localStorage.setItem("sidebarOpen", "false"); // Ruaj statusin
+            main.style.marginLeft = "50px";
+        } else {
+            sidebar.classList.add("show");
+            localStorage.setItem("sidebarOpen", "true"); // Ruaj statusin
+            main.style.marginLeft = "250px";
+        }
+    }
+
+    function toggleSubmenu(event) {
+        event.preventDefault(); // Shmang ndryshimin e faqes
+
+        var submenu = document.getElementById("submenu-leje");
+
+        if (submenu.classList.contains("show")) {
+            submenu.classList.remove("show");
+            localStorage.setItem("submenuOpen", "false"); // Ruaj statusin
+        } else {
+            submenu.classList.add("show");
+            localStorage.setItem("submenuOpen", "true"); // Ruaj statusin
+        }
+    }
+
+    // ✅ Rikuperimi i statusit të sidebar dhe nën-menusë
+    document.addEventListener("DOMContentLoaded", function () {
+        if (localStorage.getItem("sidebarOpen") === "true") {
+            document.getElementById("sidebarMenu").classList.add("show");
+            document.getElementById("mainContent").style.marginLeft = "250px";
+        }
+
+        if (localStorage.getItem("submenuOpen") === "true") {
+            document.getElementById("submenu-leje").classList.add("show");
+        }
+    });
+</script>
+
+</body>
+</html>

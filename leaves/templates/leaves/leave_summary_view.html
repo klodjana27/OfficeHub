@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">📊 Përmbledhja e Lejeve</h2>
+
+    <div class="row mt-4">
+        <!-- ✅ Bilanci për këtë vit -->
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 mb-4">
+                <h4>🗓️ Lejet për këtë vit ({{ current_year }})</h4>
+                <p><strong>Leje totale:</strong> {{ current_balance.custom_leave_days }} ditë</p>  <!-- ✅ Shfaq lejet totale -->
+                <p><strong>Leje të marra:</strong> {{ current_balance.used_leave_days }} ditë</p>
+                <p><strong>Leje të mbetura:</strong> {{ current_balance.remaining_days }} ditë</p>  <!-- ✅ Shfaq ditët e mbetura -->
+            </div>
+        </div>
+
+        <!-- ✅ Bilanci për vitet e mëparshme -->
+        <div class="col-md-4">
+            <div class="card shadow-sm p-3 mb-4">
+                <h4>📅 Lejet e viteve të kaluara</h4>
+                <ul class="list-group">
+                    {% for balance in previous_balances %}
+                        <li class="list-group-item">
+                            <strong>Viti {{ balance.year }}:</strong> 
+                            {{ balance.used_leave_days }} ditë të marra, 
+                            {{ balance.remaining_days }} ditë të mbetura
+                        </li>
+                    {% empty %}
+                        <li class="list-group-item">⛔ Nuk ka të dhëna për vitet e mëparshme.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+
+        <!-- ✅ Historiku i Lejeve -->
+        <div class="col-md-12">
+            <div class="card shadow-sm p-3 mb-4">
+                <h4>📜 Historiku i Lejeve</h4>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Data e Fillimit</th>
+                            <th>Data e Mbarimit</th>
+                            <th>Lloji i Lejes</th>
+                            <th>Statusi</th>
+                            <th>Ditë</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for leave in leave_history %}
+                        <tr>
+                            <td>{{ leave.start_date }}</td>
+                            <td>{{ leave.end_date }}</td>
+                            <td>{{ leave.get_leave_type_display }}</td>
+                            <td>
+                                {% if leave.status == "Approved" %}
+                                    ✅ Aprovuar
+                                {% elif leave.status == "Pending" %}
+                                    ⏳ Në Pritje
+                                {% else %}
+                                    ❌ Refuzuar
+                                {% endif %}
+                            </td>
+                            <td>{{ leave.duration }} ditë</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center">⛔ Nuk ka leje të miratuara.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

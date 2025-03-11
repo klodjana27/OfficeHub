@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">📜 Kërkesat për Leje</h2>
+    <p class="text-center">Nuk ka të dhëna për kërkesat e lejeve për momentin.</p>
+
+    <!--utoni për të hapur modalin -->
+    <div class="text-end mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#requestLeaveModal">
+            ➕ Kërko Leje
+        </button>
+    </div>
+
+    <!-- Tabela me kërkesat për leje -->
+    <table class="table table-bordered table-hover">
+        <thead class="table-dark">
+            <tr>
+                <th>Punonjësi</th>
+                <th>Data e Fillimit</th>
+                <th>Data e Mbarimit</th>
+                <th>Lloji</th>
+                <th>Statusi</th>
+                {% if user.role == "Manager" or user.role == "HR" %}
+                    <th>Veprime</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for leave in leave_requests %}
+            <tr>
+                <td>{{ leave.employee.username }}</td>
+                <td>{{ leave.start_date }}</td>
+                <td>{{ leave.end_date }}</td>
+                <td>{{ leave.leave_type }}</td>
+                <td>
+                    {% if leave.status == "Approved" %}
+                        <span class="badge bg-success">Aprovuar</span>
+                    {% elif leave.status == "Rejected" %}
+                        <span class="badge bg-danger">Refuzuar</span>
+                    {% else %}
+                        <span class="badge bg-warning text-dark">Në Pritje</span>
+                    {% endif %}
+                </td>
+                {% if user.role == "Manager" or user.role == "HR" %}
+                <td>
+                    <button class="btn btn-success btn-sm" onclick="approveLeave({{ leave.id }})">✔ Aprovuar</button>
+                    <button class="btn btn-danger btn-sm" onclick="rejectLeave({{ leave.id }})">❌ Refuzuar</button>
+                </td>
+                {% endif %}
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">⛔ Nuk ka kërkesa për leje.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- ✅ Modal për Kërkesën e Lejes -->
+<div class="modal fade" id="requestLeaveModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">📅 Kërko Leje</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="leaveRequestForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label>Data e Fillimit</label>
+                        <input type="date" name="start_date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Data e Mbarimit</label>
+                        <input type="date" name="end_date" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Lloji i Lejes</label>
+                        <select name="leave_type" class="form-control">
+                            <option value="Annual">Leje Vjetore</option>
+                            <option value="Sick">Leje Sëmundje</option>
+                            <option value="Other">Tjetër</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">📩 Dërgo Kërkesën</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Dërgon të dhënat me AJAX
+document.getElementById("leaveRequestForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    
+    fetch("{% url 'request_leave' %}", {
+        method: "POST",
+        body: new FormData(this),
+        headers: { "X-Requested-With": "XMLHttpRequest" }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.status === "success") {
+            alert("✅ Kërkesa për leje u dërgua me sukses!");
+            location.reload();  // Rifresko faqen për të shfaqur kërkesën e re
+        } else {
+            alert("⚠ Ndodhi një gabim, provoni përsëri!");
+        }
+    });
+});
+
+// ✅ Funksioni për aprovimin e një leje
+function approveLeave(id) {
+    fetch(`/leaves/approve/${id}/`, {
+        method: "POST",
+        headers: { "X-CSRFToken": "{{ csrf_token }}" }
+    }).then(() => location.reload());
+}
+
+// ✅ Funksioni për refuzimin e një leje
+function rejectLeave(id) {
+    fetch(`/leaves/reject/${id}/`, {
+        method: "POST",
+        headers: { "X-CSRFToken": "{{ csrf_token }}" }
+    }).then(() => location.reload());
+}
+</script>
+
+{% endblock %}

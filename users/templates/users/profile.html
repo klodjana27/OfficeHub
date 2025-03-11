@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <!-- Sidebar -->
+        <nav class="col-md-3 col-lg-2 d-md-block bg-light sidebar shadow-sm">
+            <div class="position-sticky pt-3">
+                <h5 class="text-center fw-bold text-primary">🔹 Menu</h5>
+                <ul class="nav flex-column">
+                    <li class="nav-item"><a class="nav-link active" href="{% url 'profile' %}">📋 Profili</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'notifications' %}">🔔 Njoftime</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'meeting_list' %}">📅 Salla Takimi</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'leave_requests' %}">📅 Kërkesat për Leje</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'leave_summary' %}">📊 Përmbledhja e Lejeve</a></li>  <!-- ✅ Ndryshuar nga leave_summery në leave_summary -->
+                    <li class="nav-item"><a class="nav-link" href="{% url 'training_list' %}">📚 Trajnime</a></li>
+                    <li class="nav-item"><a class="nav-link text-danger" href="{% url 'logout' %}">🚪 Dil</a></li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+            <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+                <h2 class="fw-bold text-primary">👤 Profili i Përdoruesit</h2>
+            </div>
+            
+            <div class="card p-4 shadow-lg bg-white border-0">
+                <div class="row">
+                    <div class="col-md-3 text-center">
+                        <img src="/static/images/profile-placeholder.png" class="rounded-circle border border-primary" width="120" height="120" alt="Foto Profili">
+                        <p class="mt-2 text-muted"><i>Foto Profili</i></p>
+                    </div>
+                    <div class="col-md-9">
+                        <p><strong>📛 Emri:</strong> {{ user.first_name }} {{ user.last_name }}</p>
+                        <p><strong>📧 Email:</strong> {{ user.email }}</p>
+                        <p><strong>🏢 Departamenti:</strong> {{ user.department }}</p>
+                        <p><strong>🎭 Roli:</strong> {{ user.role }}</p>
+                        <p><strong>📅 Data e Krijimit:</strong> {{ user.date_joined|date:"d-m-Y H:i" }}</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+{% endblock %}

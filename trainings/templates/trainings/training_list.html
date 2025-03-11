@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>Lista e Trajnimeve</h2>
+<ul>
+    {% for training in trainings %}
+    <li>{{ training.name }} - {{ training.date }}</li>
+    {% empty %}
+    <li>Nuk ka trajnime të disponueshme.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

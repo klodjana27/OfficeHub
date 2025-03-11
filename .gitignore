@@ -1,0 +1,42 @@
+# Python-related
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+*.swp
+*.swo
+*.bak
+
+# Virtual Environment
+venv/
+env/
+.djenv
+*.env
+
+# Django & Database
+db.sqlite3
+db.sqlite3-journal
+*.log
+*.pot
+*.pyc
+*.pyo
+migrations/
+media/
+meetings/
+staticfiles/
+node_modules/
+
+# Secret Files
+.env
+config/settings_local.py
+config/.secrets.json
+
+# Ignore Editor/IDE Settings
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# macOS & Windows
+.DS_Store
+Thumbs.db
